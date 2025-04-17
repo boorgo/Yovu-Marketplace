@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { mockFlightResults } from "@/lib/mock-flight-results"
 
+export const dynamic = "force-dynamic"
+
 export default function FlightResultsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()

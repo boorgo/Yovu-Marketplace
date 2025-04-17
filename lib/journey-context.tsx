@@ -1,190 +1,103 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-interface JourneyItem {
+// Define types for journey items
+export type JourneyItemType = "accommodation" | "activity" | "restaurant" | "transportation" | "flight"
+
+export interface JourneyItem {
   id: string
-  type: string
-  title: string
+  type: JourneyItemType
+  name: string
   price: number
   sustainabilityScore: number
-  carbonSaved: number
-  natureImpact?: number
-  communityImpact?: number
-  [key: string]: any
+  carbonFootprint: number
+  image?: string
+  location?: string
+  dates?: {
+    start: string
+    end?: string
+  }
 }
 
 interface JourneyContextType {
-  journey: {
-    accommodation?: JourneyItem
-    activities: JourneyItem[]
-    transportation?: JourneyItem
-    restaurants: JourneyItem[]
-    flight?: JourneyItem
-  }
-  addToJourney: (item: JourneyItem) => void
-  removeFromJourney: (type: string, id?: string) => void
-  clearJourney: () => void
-  getJourneyImpact: () => {
-    carbonSaved: number
-    sustainabilityScore: number
-    totalCost: number
-    communityImpact: number
-  }
+  items: JourneyItem[]
+  addItem: (item: JourneyItem) => void
+  removeItem: (itemId: string) => void
+  clearItems: () => void
+  totalPrice: number
+  averageSustainabilityScore: number
+  totalCarbonFootprint: number
 }
 
 const JourneyContext = createContext<JourneyContextType | undefined>(undefined)
 
-const EMPTY_JOURNEY = {
-  accommodation: undefined,
-  activities: [],
-  transportation: undefined,
-  restaurants: [],
-  flight: undefined,
-}
+export function JourneyProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<JourneyItem[]>([])
 
-export function JourneyProvider({ children }: { children: React.ReactNode }) {
-  // Try to load journey from localStorage
-  const [journey, setJourney] = useState<JourneyContextType["journey"]>(EMPTY_JOURNEY)
-
-  // Load journey from localStorage on initial render
+  // Load items from localStorage on initial render
   useEffect(() => {
-    const savedJourney = localStorage.getItem("yovu-journey")
-    if (savedJourney) {
-      try {
-        setJourney(JSON.parse(savedJourney))
-      } catch (error) {
-        console.error("Failed to parse saved journey:", error)
+    try {
+      const savedItems = localStorage.getItem("journeyItems")
+      if (savedItems) {
+        setItems(JSON.parse(savedItems))
       }
+    } catch (error) {
+      console.error("Error loading journey items from localStorage:", error)
+      // If there's an error, initialize with empty array
+      setItems([])
     }
   }, [])
 
-  // Save journey to localStorage whenever it changes
+  // Save items to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("yovu-journey", JSON.stringify(journey))
-  }, [journey])
+    try {
+      localStorage.setItem("journeyItems", JSON.stringify(items))
+    } catch (error) {
+      console.error("Error saving journey items to localStorage:", error)
+    }
+  }, [items])
 
-  const addToJourney = (item: JourneyItem) => {
-    setJourney((prev) => {
-      // Handle different item types
-      switch (item.type) {
-        case "accommodation":
-          return { ...prev, accommodation: item }
-        case "activity":
-          return { ...prev, activities: [...prev.activities, item] }
-        case "transportation":
-          return { ...prev, transportation: item }
-        case "restaurant":
-          return { ...prev, restaurants: [...prev.restaurants, item] }
-        case "flight":
-          return { ...prev, flight: item }
-        default:
-          return prev
-      }
+  const addItem = (item: JourneyItem) => {
+    setItems((prevItems) => {
+      // Ensure prevItems is an array
+      const currentItems = Array.isArray(prevItems) ? prevItems : []
+      return [...currentItems, item]
     })
   }
 
-  const removeFromJourney = (type: string, id?: string) => {
-    setJourney((prev) => {
-      switch (type) {
-        case "accommodation":
-          return { ...prev, accommodation: undefined }
-        case "activity":
-          return {
-            ...prev,
-            activities: prev.activities.filter((item) => item.id !== id),
-          }
-        case "transportation":
-          return { ...prev, transportation: undefined }
-        case "restaurant":
-          return {
-            ...prev,
-            restaurants: prev.restaurants.filter((item) => item.id !== id),
-          }
-        case "flight":
-          return { ...prev, flight: undefined }
-        default:
-          return prev
-      }
+  const removeItem = (itemId: string) => {
+    setItems((prevItems) => {
+      // Ensure prevItems is an array
+      const currentItems = Array.isArray(prevItems) ? prevItems : []
+      return currentItems.filter((item) => item.id !== itemId)
     })
   }
 
-  const clearJourney = () => {
-    setJourney(EMPTY_JOURNEY)
+  const clearItems = () => {
+    setItems([])
   }
 
-  const getJourneyImpact = () => {
-    let carbonSaved = 0
-    let sustainabilityScore = 0
-    let totalCost = 0
-    let communityImpact = 0
-    let itemCount = 0
+  // Calculate totals
+  const totalPrice = Array.isArray(items) ? items.reduce((sum, item) => sum + item.price, 0) : 0
 
-    // Calculate accommodation impact
-    if (journey.accommodation) {
-      carbonSaved += journey.accommodation.carbonSaved || 0
-      sustainabilityScore += journey.accommodation.sustainabilityScore || 0
-      totalCost += journey.accommodation.price || 0
-      communityImpact += journey.accommodation.communityImpact || 0
-      itemCount++
-    }
+  const averageSustainabilityScore =
+    Array.isArray(items) && items.length > 0
+      ? items.reduce((sum, item) => sum + item.sustainabilityScore, 0) / items.length
+      : 0
 
-    // Calculate activities impact
-    journey.activities.forEach((activity) => {
-      carbonSaved += activity.carbonSaved || 0
-      sustainabilityScore += activity.sustainabilityScore || 0
-      totalCost += activity.price || 0
-      communityImpact += activity.communityImpact || 0
-      itemCount++
-    })
-
-    // Calculate transportation impact
-    if (journey.transportation) {
-      carbonSaved += journey.transportation.carbonSaved || 0
-      sustainabilityScore += journey.transportation.sustainabilityScore || 0
-      totalCost += journey.transportation.price || 0
-      communityImpact += journey.transportation.communityImpact || 0
-      itemCount++
-    }
-
-    // Calculate restaurants impact
-    journey.restaurants.forEach((restaurant) => {
-      carbonSaved += restaurant.carbonSaved || 0
-      sustainabilityScore += restaurant.sustainabilityScore || 0
-      totalCost += restaurant.price || 0
-      communityImpact += restaurant.communityImpact || 0
-      itemCount++
-    })
-
-    // Calculate flight impact
-    if (journey.flight) {
-      carbonSaved += journey.flight.carbonSaved || 0
-      sustainabilityScore += journey.flight.sustainabilityScore || 0
-      totalCost += journey.flight.price || 0
-      communityImpact += journey.flight.communityImpact || 0
-      itemCount++
-    }
-
-    // Calculate average sustainability score
-    const avgSustainabilityScore = itemCount > 0 ? Math.round(sustainabilityScore / itemCount) : 0
-
-    return {
-      carbonSaved,
-      sustainabilityScore: avgSustainabilityScore,
-      totalCost,
-      communityImpact,
-    }
-  }
+  const totalCarbonFootprint = Array.isArray(items) ? items.reduce((sum, item) => sum + item.carbonFootprint, 0) : 0
 
   return (
     <JourneyContext.Provider
       value={{
-        journey,
-        addToJourney,
-        removeFromJourney,
-        clearJourney,
-        getJourneyImpact,
+        items: Array.isArray(items) ? items : [],
+        addItem,
+        removeItem,
+        clearItems,
+        totalPrice,
+        averageSustainabilityScore,
+        totalCarbonFootprint,
       }}
     >
       {children}

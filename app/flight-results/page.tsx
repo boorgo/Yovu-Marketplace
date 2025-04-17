@@ -12,6 +12,8 @@ import { Star, Plus, Leaf, Plane, ArrowLeft } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 
+export const dynamic = "force-dynamic"
+
 export default function FlightResultsPage() {
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)

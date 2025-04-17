@@ -4,6 +4,8 @@ import { SearchInterface } from "@/components/search/search-interface"
 import { JourneyPlanner } from "@/components/search/journey-planner"
 import type { Metadata } from "next"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Search - Yovu",
   description: "Find and book sustainable travel options for your journey",

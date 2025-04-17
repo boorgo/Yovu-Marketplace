@@ -5,6 +5,8 @@ import { OnboardingForm } from "@/components/onboarding-form"
 import { createServerSupabaseClient, getSession } from "@/lib/server-auth"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Complete Your Profile - Yovu",
   description: "Set up your sustainable travel preferences",

@@ -7,6 +7,8 @@ import { RecommendedExperiences } from "@/components/dashboard/recommended-exper
 import { getSession } from "@/lib/server-auth"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Dashboard - Yovu",
   description: "Manage your sustainable travel journeys",

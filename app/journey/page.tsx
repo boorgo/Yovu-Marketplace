@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Create your sustainable travel journey step by step",
 }
 
+export const dynamic = "force-dynamic"
+
 export default function JourneyPage() {
   return (
     <div className="flex min-h-screen flex-col bg-yovu-mint">

@@ -1,94 +1,145 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import type { JourneyResult } from "@/lib/mock-journey-results"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-type JourneyItem = JourneyResult & {
-  startDate?: Date
-  endDate?: Date
-  quantity?: number
-  notes?: string
+// Define types for journey items
+export type JourneyItemType = "accommodation" | "activity" | "restaurant" | "transportation" | "flight"
+
+export interface JourneyItem {
+  id: string
+  type: JourneyItemType
+  name: string
+  price: number
+  sustainabilityScore: number
+  carbonFootprint: number
+  image?: string
+  location?: string
+  dates?: {
+    start: string
+    end?: string
+  }
 }
 
 interface JourneyBuilderContextType {
-  selectedItems: JourneyItem[]
-  addItem: (item: JourneyResult) => void
+  items: JourneyItem[]
+  addItem: (item: JourneyItem) => void
   removeItem: (itemId: string) => void
-  updateItem: (itemId: string, updates: Partial<JourneyItem>) => void
   clearItems: () => void
   totalPrice: number
-  totalSustainabilityScore: number
+  averageSustainabilityScore: number
+  totalCarbonFootprint: number
+  destination: string | null
+  setDestination: (destination: string) => void
+  dates: {
+    start: string | null
+    end: string | null
+  }
+  setDates: (dates: { start: string | null; end: string | null }) => void
+  travelers: number
+  setTravelers: (count: number) => void
 }
 
 const JourneyBuilderContext = createContext<JourneyBuilderContextType | undefined>(undefined)
 
-export function JourneyBuilderProvider({ children }: { children: React.ReactNode }) {
-  const [selectedItems, setSelectedItems] = useState<JourneyItem[]>([])
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [totalSustainabilityScore, setTotalSustainabilityScore] = useState(0)
+export function JourneyBuilderProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<JourneyItem[]>([])
+  const [destination, setDestination] = useState<string | null>(null)
+  const [dates, setDates] = useState<{ start: string | null; end: string | null }>({
+    start: null,
+    end: null,
+  })
+  const [travelers, setTravelers] = useState<number>(1)
 
-  // Calculate totals whenever selected items change
+  // Load journey data from localStorage on initial render
   useEffect(() => {
-    if (selectedItems.length === 0) {
-      setTotalPrice(0)
-      setTotalSustainabilityScore(0)
-      return
-    }
+    try {
+      const savedItems = localStorage.getItem("journeyBuilderItems")
+      const savedDestination = localStorage.getItem("journeyBuilderDestination")
+      const savedDates = localStorage.getItem("journeyBuilderDates")
+      const savedTravelers = localStorage.getItem("journeyBuilderTravelers")
 
-    const price = selectedItems.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0)
-    setTotalPrice(price)
-
-    const avgSustainability =
-      selectedItems.reduce((sum, item) => sum + item.sustainabilityScore, 0) / selectedItems.length
-    setTotalSustainabilityScore(Math.round(avgSustainability))
-  }, [selectedItems])
-
-  // Add an item to the journey
-  const addItem = (item: JourneyResult) => {
-    // Check if item already exists
-    const existingItemIndex = selectedItems.findIndex((i) => i.id === item.id)
-
-    if (existingItemIndex >= 0) {
-      // If item exists, increment quantity
-      const updatedItems = [...selectedItems]
-      const existingItem = updatedItems[existingItemIndex]
-      updatedItems[existingItemIndex] = {
-        ...existingItem,
-        quantity: (existingItem.quantity || 1) + 1,
+      if (savedItems) {
+        setItems(JSON.parse(savedItems))
       }
-      setSelectedItems(updatedItems)
-    } else {
-      // Otherwise add new item
-      setSelectedItems([...selectedItems, { ...item, quantity: 1 }])
+      if (savedDestination) {
+        setDestination(savedDestination)
+      }
+      if (savedDates) {
+        setDates(JSON.parse(savedDates))
+      }
+      if (savedTravelers) {
+        setTravelers(Number.parseInt(savedTravelers, 10))
+      }
+    } catch (error) {
+      console.error("Error loading journey data from localStorage:", error)
+      // If there's an error, initialize with defaults
+      setItems([])
+      setDestination(null)
+      setDates({ start: null, end: null })
+      setTravelers(1)
     }
+  }, [])
+
+  // Save journey data to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem("journeyBuilderItems", JSON.stringify(items))
+      if (destination) {
+        localStorage.setItem("journeyBuilderDestination", destination)
+      }
+      localStorage.setItem("journeyBuilderDates", JSON.stringify(dates))
+      localStorage.setItem("journeyBuilderTravelers", travelers.toString())
+    } catch (error) {
+      console.error("Error saving journey data to localStorage:", error)
+    }
+  }, [items, destination, dates, travelers])
+
+  const addItem = (item: JourneyItem) => {
+    setItems((prevItems) => {
+      // Ensure prevItems is an array
+      const currentItems = Array.isArray(prevItems) ? prevItems : []
+      return [...currentItems, item]
+    })
   }
 
-  // Remove an item from the journey
   const removeItem = (itemId: string) => {
-    setSelectedItems(selectedItems.filter((item) => item.id !== itemId))
+    setItems((prevItems) => {
+      // Ensure prevItems is an array
+      const currentItems = Array.isArray(prevItems) ? prevItems : []
+      return currentItems.filter((item) => item.id !== itemId)
+    })
   }
 
-  // Update an item in the journey
-  const updateItem = (itemId: string, updates: Partial<JourneyItem>) => {
-    setSelectedItems(selectedItems.map((item) => (item.id === itemId ? { ...item, ...updates } : item)))
-  }
-
-  // Clear all items
   const clearItems = () => {
-    setSelectedItems([])
+    setItems([])
   }
+
+  // Calculate totals
+  const totalPrice = Array.isArray(items) ? items.reduce((sum, item) => sum + item.price, 0) : 0
+
+  const averageSustainabilityScore =
+    Array.isArray(items) && items.length > 0
+      ? items.reduce((sum, item) => sum + item.sustainabilityScore, 0) / items.length
+      : 0
+
+  const totalCarbonFootprint = Array.isArray(items) ? items.reduce((sum, item) => sum + item.carbonFootprint, 0) : 0
 
   return (
     <JourneyBuilderContext.Provider
       value={{
-        selectedItems,
+        items: Array.isArray(items) ? items : [],
         addItem,
         removeItem,
-        updateItem,
         clearItems,
         totalPrice,
-        totalSustainabilityScore,
+        averageSustainabilityScore,
+        totalCarbonFootprint,
+        destination,
+        setDestination,
+        dates,
+        setDates,
+        travelers,
+        setTravelers,
       }}
     >
       {children}

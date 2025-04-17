@@ -5,6 +5,8 @@ import { SiteFooter } from "@/components/site-footer"
 import { mockJourneyResults } from "@/lib/mock-journey-results"
 import { JourneyResultsContainer } from "@/components/journey/journey-results-container"
 
+export const dynamic = "force-dynamic"
+
 export default function JourneyResultsPage() {
   const searchParams = useSearchParams()
 

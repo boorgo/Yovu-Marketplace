@@ -10,6 +10,8 @@ import { DestinationResults } from "@/components/destination/destination-results
 import { JourneySidebar } from "@/components/destination/journey-sidebar"
 import { mockDestinationData } from "@/lib/mock-destination-data"
 
+export const dynamic = "force-dynamic"
+
 export default function DestinationPage() {
   const params = useParams()
   const searchParams = useSearchParams()

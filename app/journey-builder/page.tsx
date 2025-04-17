@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { JourneyBuilderProvider } from "@/lib/journey-builder-context"
 import { JourneyBuilderInterface } from "@/components/journey/journey-builder-interface"
 
