@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mint green background from Yovu site */
+    --background: 126 67% 89%;
+    /* Dark charcoal text */
+    --foreground: 0 0% 23%;
+
+    /* Dark charcoal as primary color for buttons */
+    --primary: 0 0% 23%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Light mint as secondary color */
+    --secondary: 126 67% 89%;
+    --secondary-foreground: 0 0% 23%;
+
+    /* Muted mint */
+    --muted: 126 67% 85%;
+    --muted-foreground: 0 0% 40%;
+
+    /* Accent color */
+    --accent: 126 67% 80%;
+    --accent-foreground: 0 0% 23%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 23%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 23%;
+
+    --border: 126 67% 85%;
+    --input: 126 67% 93%;
+
+    /* Red for destructive actions */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 0 0% 23%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 23%;
+    --foreground: 126 67% 89%;
+
+    --primary: 126 67% 89%;
+    --primary-foreground: 0 0% 23%;
+
+    --secondary: 0 0% 18%;
+    --secondary-foreground: 126 67% 89%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 126 67% 80%;
+
+    --accent: 0 0% 28%;
+    --accent-foreground: 126 67% 89%;
+
+    --card: 0 0% 18%;
+    --card-foreground: 126 67% 89%;
+
+    --popover: 0 0% 18%;
+    --popover-foreground: 126 67% 89%;
+
+    --border: 0 0% 28%;
+    --input: 0 0% 28%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 126 67% 89%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-yovu-mint text-yovu-charcoal;
+  }
+}
+
+/* Custom styles for form elements */
+@layer components {
+  .yovu-input {
+    @apply bg-white border border-yovu-mint rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yovu-charcoal/20 focus:border-yovu-charcoal/30 transition-all;
+  }
+
+  .yovu-card {
+    @apply bg-white rounded-md shadow-sm border border-yovu-mint;
+  }
+
+  .yovu-button {
+    @apply bg-yovu-charcoal text-white rounded-md px-6 py-2 hover:bg-yovu-charcoal/90 transition-all;
+  }
+
+  .yovu-section {
+    @apply bg-yovu-mint py-12;
+  }
+}
